@@ -1,137 +1,84 @@
-#define _CRT_SECURE_NO_WARNINGS
 #include "pch.h"
 #include <stdio.h>
 #include <stdlib.h>
-#include "SubtreeWidth.h"
-#include "C:\Users\nasty\source\repos\Lab4\SubtreeWidth\SubtreeWidth.c"
+#include "Treaps.h"
+#include "Treaps.c"
 
-TEST(DataWidthTest, return_data_width_no1) {
-	int data = 100;
-	int width = DataWidth(data);
-	EXPECT_EQ(width, 3);
+TEST(CreateNodeTest, new_node_key_is_correct_no1) {
+	Treap_t* t = CreateNode(1);
+	EXPECT_EQ(t->key, 1);
 }
 
-TEST(TreeWidthTest, leaf_width_is_data_width_no2) {
-	Tree_t t = { 10, NULL, NULL, 0 };
-	TreeWidth(&t);
-	EXPECT_EQ(t.width, 2);
+TEST(CreateNodeTest, new_node_priority_is_valid_value_no2) {
+	Treap_t* t = CreateNode(1);
+	EXPECT_TRUE(t->priority >= 0 && t->priority <= RAND_MAX);
 }
 
-TEST(TreeWidthTest, root_width_is_tree_width_no3) {
-	Tree_t t1 = { 10, NULL, NULL, 0 };
-	Tree_t t2 = { 1, NULL, NULL, 0 };
-	Tree_t t3 = { 1, &t1, NULL, 0 };
-	Tree_t t4 = { 10, &t3, &t2, 0 };
-
-	TreeWidth(&t4);
-
-	EXPECT_EQ(t4.width, 6);
+TEST(MergeTest, both_treaps_not_null_return_merged_treap_no3) {
+	Treap_t t1 = { 3, 1, NULL, NULL };
+	Treap_t t2 = { 2, 2, NULL, NULL };
+	Treap_t* t = Merge(&t2, &t1);
+	EXPECT_EQ(t, &t1);
+	EXPECT_EQ(t->left, &t2);
 }
 
-TEST(TreeWidthTest, child_width_is_subtree_width_no4) {
-	Tree_t t1 = { 10, NULL, NULL, 0 };
-	Tree_t t2 = { 1, &t1, NULL, 0 };
-	Tree_t t3 = { 10, &t2, NULL, 0 };
-
-	TreeWidth(&t3);
-
-	EXPECT_EQ(t2.width, 3);
+TEST(MergeTest, one_treap_is_null_return_merged_treap_no4) {
+	Treap_t t1 = { 3, 1, NULL, NULL };
+	Treap_t* t = Merge(&t1, NULL);
+	EXPECT_EQ(t, &t1);
+	EXPECT_EQ(t->left, nullptr);
+	EXPECT_EQ(t->left, nullptr);
 }
 
-TEST(TreeHeightTest, tree_ptr_is_null_return_0_no5) {
-	Tree_t* ptr = NULL;
-	int height = TreeHeight(ptr);
-	EXPECT_EQ(height, 0);
+TEST(SplitTest, key_is_in_treap_no5) {
+	Treap_t t2 = { 1, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t *l, *r;
+	Split(&t1, 3, &l, &r);
+	EXPECT_EQ(l, &t2);
+	EXPECT_EQ(r, &t1);
 }
 
-TEST(TreeHeightTest, tree_not_null_return_tree_height_no6) {
-	Tree_t t1 = { 10, NULL, NULL, 0 };
-	Tree_t t2 = { 1, NULL, NULL, 0 };
-	Tree_t t3 = { 1, &t1, NULL, 0 };
-	Tree_t t4 = { 10, &t3, &t2, 0 };
-
-	int height = TreeHeight(&t4);
-
-	EXPECT_EQ(height, 3);
+TEST(SplitTest, key_not_in_treap_no6) {
+	Treap_t t2 = { 1, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t* l, * r;
+	Split(&t1, 2, &l, &r);
+	EXPECT_EQ(l, &t2);
+	EXPECT_EQ(r, &t1);
 }
 
-TEST(IntToCharTest, return_digit_symbol_no7) {
-	int digit = 5;
-	char ch = IntToChar(digit);
-	EXPECT_EQ(ch, '5');
+TEST(AddTest, element_added_to_treap_no7) {
+	Treap_t t1 = { 3, -1, NULL, NULL };
+	Treap_t* t = Add(&t1, 1);
+	EXPECT_EQ(t->left->key, 1);
 }
 
-TEST(WriteDataTest, data_written_into_matrix_no8) {
-	int data = 1234;
-	char** matrix = (char**)malloc(sizeof(char*));
-	matrix[0] = (char*)malloc(sizeof(char) * 4);
-	
-	WriteData(data, matrix, 0, 0);
-
-	char chdata[5] = "1234";
-	for (int i = 0; i < 4; i++) {
-		EXPECT_EQ(matrix[0][i], chdata[i]);
-	}
-
-	free(matrix[0]);
-	free(matrix);
+TEST(FindTest, element_is_in_treap_return_pointer_to_element_no8) {
+	Treap_t t2 = { 2, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t* el = Find(&t1, 2);
+	EXPECT_EQ(el, t1.left);
 }
 
-TEST(TreeToMatrixTest, tree_ptr_is_null_matrix_unchanged_no9) {
-	char** matrix = (char**)malloc(sizeof(char*));
-	matrix[0] = (char*)malloc(sizeof(char) * 4);
-	for (int i = 0; i < 4; i++) {
-		matrix[0][i] = ' ';
-	}
-	Tree_t* ptr = NULL;
-
-	int x = 0;
-	TreeToMatrix(ptr, matrix, &x, 0);
-
-	for (int i = 0; i < 4; i++) {
-		EXPECT_EQ(matrix[0][i], ' ');
-	}
-
-	free(matrix[0]);
-	free(matrix);
+TEST(FindTest, element_not_in_treap_return_null_no9) {
+	Treap_t t2 = { 2, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t* el = Find(&t1, 4);
+	EXPECT_EQ(el, nullptr);
 }
 
-TEST(TreeToMatrixTest, tree_not_null_tree_written_to_matrix_no10) {
-	Tree_t t1 = { 1, NULL, NULL, 1 };
-	Tree_t t2 = { 1, NULL, NULL, 1 };
-	Tree_t t3 = { 10, &t1, &t2, 4 };
-
-	char** matrix = (char**)malloc(sizeof(char*) * 4);
-	for (int i = 0; i < 4; i++) {
-		matrix[i] = (char*)malloc(sizeof(char) * 4);
-	}
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			matrix[i][j] = ' ';
-		}
-	}
-
-	int x = 0;
-	TreeToMatrix(&t3, matrix, &x, 0);
-
-	char correctMatrix[5][5] = { " 10 ", " 4  ", "1  1", "1  1" };
-	for (int i = 0; i < 4; i++) {
-		for (int j = 0; j < 4; j++) {
-			EXPECT_EQ(matrix[i][j], correctMatrix[i][j]);
-		}
-	}
-
-	for (int i = 0; i < 4; i++) {
-		free(matrix[i]);
-	}
-	free(matrix);
+TEST(DeleteTest, element_is_in_treap_element_deleted_no10) {
+	Treap_t t2 = { 2, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t* t = Delete(&t1, 2);
+	EXPECT_EQ(t->left, nullptr);
 }
 
-TEST(PrintTreeTest, tree_printed_no11) {
-	Tree_t t1 = { 1, NULL, NULL, 1 };
-	Tree_t t2 = { 1, NULL, NULL, 1 };
-	Tree_t t3 = { 10, &t1, &t2, 4 };
-	PrintTree(&t3);
+TEST(DeleteTest, element_not_in_treap_treap_unchanged_no11) {
+	Treap_t t2 = { 2, 2, NULL, NULL };
+	Treap_t t1 = { 3, 1, &t2, NULL };
+	Treap_t* t = Delete(&t1, 5);
+	EXPECT_EQ(t, &t1);
+	EXPECT_EQ(t->left, &t2);
 }
-
-
